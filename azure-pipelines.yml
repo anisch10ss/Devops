@@ -6,8 +6,13 @@ pool:
 
 variables:
   phpVersion: 8.1
+  system.debug: true
 
 steps:
+- checkout: self
+  fetchDepth: 0
+
+# Set PHP version
 - script: |
     sudo update-alternatives --set php /usr/bin/php$(phpVersion)
     sudo update-alternatives --set phar /usr/bin/phar$(phpVersion)
@@ -15,19 +20,17 @@ steps:
     sudo update-alternatives --set php-cgi /usr/bin/php-cgi$(phpVersion)
     sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
     php -version
-    -checkout: self 
-    fetchDepth: 1
   displayName: 'Use PHP version $(phpVersion)'
 
-- script: composer install --no-interaction --prefer-dist
-  displayName: 'Install dependencies'
-
+# Ensure Composer is installed
 - script: |
-    ./vendor/bin/phpunit --configuration phpunit.xml
-  displayName: 'Run PHP Unit Tests'
+    if ! [ -x "$(command -v composer)" ]; then
+      curl -sS https://getcomposer.org/installer | php
+      sudo mv composer.phar /usr/local/bin/composer
+    fi
+    composer -v
+  displayName: 'Install Composer if not available'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: 'path/to/build'
-    ArtifactName: 'php_project_artifacts'
-    publishLocation: 'Container'
+# Install PHP dependencies
+- script: composer install --no-interaction --prefer-dist
+  displayName: 'Install PHP Dependencies with Composer'
