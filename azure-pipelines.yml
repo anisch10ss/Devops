@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: 'AgentDevops'  # Remplacez par le nom de votre pool d'agents local
 
 variables:
   phpVersion: 8.3.7
@@ -34,3 +34,7 @@ steps:
 # Install PHP dependencies
 - script: composer install --no-interaction --prefer-dist
   displayName: 'Install PHP Dependencies with Composer'
+
+# Run tests with PHPUnit
+- script: vendor/bin/phpunit
+  displayName: 'Run PHPUnit Tests'
